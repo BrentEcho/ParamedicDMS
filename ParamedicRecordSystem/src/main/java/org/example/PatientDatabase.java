@@ -6,7 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+/**
+ * Brent Echols, CEN-3024C, 10/13/2025
+ * patient database
+ * creates the array list of all the patients added
+ *
+ */
 class PatientDatabase {
     private final List<Patient> records = new ArrayList<>();
     private int nextID = 1;
@@ -18,7 +23,7 @@ class PatientDatabase {
             return "Invalid DOB format. Use MM-DD-YYYY.";
         }
         LocalDate birth = maybeDob.get();
-        LocalDateTime admission = LocalDateTime.now().withNano(0);
+        LocalDateTime admission = LocalDateTime.now();
         int id = nextID++;
         Patient p = new Patient(id, firstName.trim(), lastName.trim(), birth, contact.trim(), condition.trim(), admission, status);
         records.add(p);
@@ -40,7 +45,7 @@ class PatientDatabase {
     public Optional<Patient> findById(int id) {
         return records.stream().filter(r -> r.getPatientID() == id).findFirst();
     }
-
+    
     public String updatePatientField(int id, String field, String newValue) {
         Optional<Patient> opt = findById(id);
         if (opt.isEmpty()) return "Patient ID not found.";
@@ -71,7 +76,7 @@ class PatientDatabase {
         }
         return "Updated: " + p.toDisplayString();
     }
-
+    //Removes patients
     public String removePatient(int id) {
         boolean removed = records.removeIf(r -> r.getPatientID() == id);
         return removed ? ("Patient " + id + " removed.") : ("Patient ID not found.");

@@ -3,6 +3,11 @@ package org.example;
 import java.util.*;
 
 /**
+ * Brent Echols, CEN-3024C, 10/13/2025
+ * ParamedicDMS
+ * Main class runs and pulls all other classes together
+ * The overall objective is to keep a record of patients that paramedics take care of on a day to day.
+ * Compiles all the data into a readable list and generates reports.
  */
 
 

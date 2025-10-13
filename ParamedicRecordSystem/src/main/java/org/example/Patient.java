@@ -6,6 +6,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
+/**
+ * Brent Echols, CEN-3024C, 10/13/2025
+ * Patient Constructor class
+ * creates the patient objects
+ *
+ */
 
 class Patient {
     private final int patientID;

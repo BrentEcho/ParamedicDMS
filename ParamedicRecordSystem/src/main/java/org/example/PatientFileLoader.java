@@ -8,11 +8,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Brent Echols, CEN-3024C, 10/13/2025
+ * PatientFileLoader
+ * Reads the sample_file and imports the patient information
+ */
 class PatientFileLoader {
     private static final DateTimeFormatter DOB_FMT = DateTimeFormatter.ofPattern("MM-dd-yyyy");
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
-
+    // loads patient data from patient_sample.txt
     public List<Patient> load(String filename) {
         List<Patient> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {

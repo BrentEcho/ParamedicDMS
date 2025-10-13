@@ -19,3 +19,5 @@ ID,FirstName,LastName,DOB,Contact,Condition,Admission,Status
 18,Karen,Moore,09-09-1989,Frank Moore - 555-7788,Allergy,10-09-2025 15:40:30,true
 19,Daniel,Jackson,01-23-1994,Sandra Jackson - 555-3344,Flu,10-10-2025 09:10:50,true
 20,Nancy,Martin,05-15-1981,George Martin - 555-6677,COVID-19,10-10-2025 11:45:00,true
+21,brent,echols,06-02-2001,Jordan Shavell,Heart Attack,10-13-2025 19:24:06,true
+22,Jacob,Hazard,12-20-2005,HI I guess,Liver,10-13-2025 19:26:29,true
