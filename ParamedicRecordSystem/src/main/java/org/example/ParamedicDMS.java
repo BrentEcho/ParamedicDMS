@@ -1,15 +1,15 @@
 package org.example;
 
 import java.util.*;
+import java.io.File;
 
 /**
  * Brent Echols, CEN-3024C, 10/13/2025
  * ParamedicDMS
- * Main class runs and pulls all other classes together
- * The overall objective is to keep a record of patients that paramedics take care of on a day to day.
+ * Main class runs and pulls all other classes together.
+ * The overall objective is to keep a record of patients that paramedics take care of on a day to day basis.
  * Compiles all the data into a readable list and generates reports.
  */
-
 
 public class ParamedicDMS {
     private final PatientDatabase database = new PatientDatabase();
@@ -27,23 +27,13 @@ public class ParamedicDMS {
             5. Generate Report by Condition
             6. Generate Report by Admission Date Range
             7. Save & Exit
-            Choose an option (1-7):
+            8. Load Patient Data from File
+            Choose an option (1-8):
             """;
 
     public static void main(String[] args) {
         ParamedicDMS app = new ParamedicDMS();
-        System.out.println(app.startupLoad());
-        System.out.println(app.run()); // run returns exit message
-    }
-
-    // Loads file on startup
-    public String startupLoad() {
-        List<Patient> loaded = loader.load(dataFile);
-        for (Patient p : loaded) database.addPatientFromFile(p);
-        if (!loaded.isEmpty()) {
-            database.setNextID(database.highestId() + 1);
-        }
-        return "Loaded " + loaded.size() + " patients from file (if file present).";
+        System.out.println(app.run());
     }
 
     // Main interactive loop returns exit message
@@ -62,7 +52,8 @@ public class ParamedicDMS {
                     String saveResult = saver.save(dataFile, database.getAllRecords());
                     return saveResult + "\n👋 Exiting PRMS.";
                 }
-                default -> System.out.println("Invalid option. Enter 1-7.");
+                case "8" -> System.out.println(handleLoadFromFile());
+                default -> System.out.println("Invalid option. Enter 1-8.");
             }
         }
     }
@@ -85,13 +76,17 @@ public class ParamedicDMS {
         return database.addPatient(first, last, dob, contact, condition, status);
     }
 
-    // View all
+    // View all patients
     private void viewAllPrint() {
         List<String> lines = database.viewAllPatients();
-        lines.forEach(System.out::println);
+        if (lines.isEmpty()) {
+            System.out.println("No patient records found.");
+        } else {
+            lines.forEach(System.out::println);
+        }
     }
 
-    // Update flow
+    // Update patient record
     private String handleUpdate() {
         try {
             System.out.print("Enter Patient ID to update: ");
@@ -106,7 +101,7 @@ public class ParamedicDMS {
         }
     }
 
-    // Remove flow
+    // Remove patient record
     private String handleRemove() {
         try {
             System.out.print("Enter Patient ID to remove: ");
@@ -122,7 +117,11 @@ public class ParamedicDMS {
         System.out.print("Enter medical condition to filter: ");
         String condition = scanner.nextLine().trim();
         List<String> report = database.reportByCondition(condition);
-        report.forEach(System.out::println);
+        if (report.isEmpty()) {
+            System.out.println("No patients found with condition: " + condition);
+        } else {
+            report.forEach(System.out::println);
+        }
     }
 
     // Report by date range
@@ -132,6 +131,37 @@ public class ParamedicDMS {
         System.out.print("To date (MM-DD-YYYY): ");
         String to = scanner.nextLine().trim();
         List<String> report = database.reportByDateRange(from, to);
-        report.forEach(System.out::println);
+        if (report.isEmpty()) {
+            System.out.println("No patients found in the specified date range.");
+        } else {
+            report.forEach(System.out::println);
+        }
+    }
+
+    // Manual file load
+    private String handleLoadFromFile() {
+        System.out.print("Enter the file name to load (e.g., patients_sample.txt): ");
+        String fileName = scanner.nextLine().trim();
+
+        if (fileName.isEmpty()) {
+            return "File name cannot be empty.";
+        }
+
+        File file = new File(fileName);
+        if (!file.exists()) {
+            return "Error: File not found.";
+        }
+
+        List<Patient> loaded = loader.load(fileName);
+        if (loaded.isEmpty()) {
+            return "No valid patient data found in file.";
+        }
+
+        for (Patient p : loaded) {
+            database.addPatientFromFile(p);
+        }
+
+        database.setNextID(database.highestId() + 1);
+        return "Successfully loaded " + loaded.size() + " patients from " + fileName + ".";
     }
 }
