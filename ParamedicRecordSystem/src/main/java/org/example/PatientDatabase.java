@@ -109,6 +109,23 @@ class PatientDatabase {
         if (filtered.isEmpty()) return List.of("No patients admitted between " + fromDateStr + " and " + toDateStr);
         return filtered.stream().map(Patient::toDisplayString).collect(Collectors.toList());
     }
+    public String loadPatientsFromFile(String filePath) {
+        try {
+            PatientFileLoader loader = new PatientFileLoader();
+            List<Patient> loaded = loader.load(filePath);
+            for (Patient p : loaded) {
+                addPatientFromFile(p); // add each loaded patient to the database
+            }
+            return "Loaded " + loaded.size() + " patients from " + filePath;
+        } catch (Exception e) {
+            return "Error loading file: " + e.getMessage();
+        }
+    }
+    public String exportToFile(String filePath) {
+        PatientFileSaver saver = new PatientFileSaver();
+        return saver.save(filePath, getAllRecords());
+    }
+
 
     public int highestId() {
         return records.stream().mapToInt(Patient::getPatientID).max().orElse(0);
