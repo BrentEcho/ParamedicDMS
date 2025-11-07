@@ -1,97 +1,60 @@
 package org.example;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Optional;
 
-/**
- * Brent Echols, CEN-3024C, 10/13/2025
- * Patient Constructor class
- * creates the patient objects
- *
- */
-
-class Patient {
-    private final int patientID;
+public class Patient {
+    private int id;
     private String firstName;
     private String lastName;
-    private LocalDate dateOfBirth; // MM-dd-yyyy
-    private String emergencyContact;
-    private String medicalCondition;
-    private LocalDateTime admissionDate; // rounded to seconds
-    private boolean status; // active/inactive
+    private String contact;
+    private String medical_condition;
+    private boolean active;
+    private LocalDateTime recordTime;
 
-    private static final DateTimeFormatter DOB_FMT = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-    private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
-
-    public Patient(int patientID, String firstName, String lastName, LocalDate dateOfBirth,
-                   String emergencyContact, String medicalCondition, LocalDateTime admissionDate, boolean status) {
-        this.patientID = patientID;
+    public Patient(int id, String firstName, String lastName, String contact,
+                   String condition, boolean active, LocalDateTime recordTime) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.dateOfBirth = dateOfBirth;
-        this.emergencyContact = emergencyContact;
-        this.medicalCondition = medicalCondition;
-        this.admissionDate = admissionDate.withNano(0); // round to whole second
-        this.status = status;
+        this.contact = contact;
+        this.medical_condition = condition;
+        this.active = active;
+        this.recordTime = recordTime;
     }
 
-    public int getPatientID() { return patientID; }
+    // Getters
+    public int getId() { return id; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
-    public LocalDate getDateOfBirth() { return dateOfBirth; }
-    public String getEmergencyContact() { return emergencyContact; }
-    public String getMedicalCondition() { return medicalCondition; }
-    public LocalDateTime getAdmissionDate() { return admissionDate; }
-    public boolean isActive() { return status; }
+    public String getContact() { return contact; }
+    public String getMedical_condition() { return medical_condition; }
+    public boolean isActive() { return active; }
+    public LocalDateTime getRecordTime() { return recordTime; }
 
+    // Setters
+    public void setId(int id) { this.id = id; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
-    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-    public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
-    public void setMedicalCondition(String medicalCondition) { this.medicalCondition = medicalCondition; }
-    public void setAdmissionDate(LocalDateTime admissionDate) { this.admissionDate = admissionDate.withNano(0); }
-    public void setStatus(boolean status) { this.status = status; }
+    public void setContact(String contact) { this.contact = contact; }
+    public void setMedical_condition(String condition) { this.medical_condition = condition; }
+    public void setActive(boolean active) { this.active = active; }
+    public void setRecordTime(LocalDateTime recordTime) { this.recordTime = recordTime; }
 
-    public String toDisplayString() {
-        return String.format("ID:%d | %s %s | DOB:%s | Contact:%s | Condition:%s | Admitted:%s | Active:%s",
-                patientID, firstName, lastName,
-                dateOfBirth.format(DOB_FMT),
-                emergencyContact,
-                medicalCondition,
-                admissionDate.format(DT_FMT),
-                status ? "Yes" : "No");
-    }
-
+    // Convert to CSV string
     public String toCsvString() {
-        return String.join(",",
-                Integer.toString(patientID),
-                firstName,
-                lastName,
-                dateOfBirth.format(DOB_FMT),
-                emergencyContact,
-                medicalCondition,
-                admissionDate.format(DT_FMT),
-                Boolean.toString(status)
-        );
+        return id + "," + firstName + "," + lastName + "," + contact + "," + medical_condition + "," + active + "," + recordTime;
     }
 
-    public static Optional<LocalDate> parseDob(String s) {
-        try {
-            return Optional.of(LocalDate.parse(s, DOB_FMT));
-        } catch (DateTimeParseException e) {
-            return Optional.empty();
-        }
-    }
-
-    public static Optional<LocalDateTime> parseDateTime(String s) {
-        try {
-            return Optional.of(LocalDateTime.parse(s, DT_FMT).withNano(0));
-        } catch (DateTimeParseException e) {
-            return Optional.empty();
-        }
+    // Create a Patient from CSV string
+    public static Patient fromCsvString(String csv) {
+        String[] parts = csv.split(",");
+        int id = Integer.parseInt(parts[0]);
+        String firstName = parts[1];
+        String lastName = parts[2];
+        String contact = parts[3];
+        String condition = parts[4];
+        boolean active = Boolean.parseBoolean(parts[5]);
+        LocalDateTime recordTime = LocalDateTime.parse(parts[6]);
+        return new Patient(id, firstName, lastName, contact, condition, active, recordTime);
     }
 }
-

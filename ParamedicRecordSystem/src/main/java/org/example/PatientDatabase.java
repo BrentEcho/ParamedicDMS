@@ -1,133 +1,151 @@
 package org.example;
 
-import java.time.LocalDate;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-/**
- * Brent Echols, CEN-3024C, 10/13/2025
- * patient database
- * creates the array list of all the patients added
- *
- */
-class PatientDatabase {
-    private final List<Patient> records = new ArrayList<>();
-    private int nextID = 1;
 
-    public String addPatient(String firstName, String lastName, String dob, String contact,
-                             String condition, boolean status) {
-        Optional<LocalDate> maybeDob = Patient.parseDob(dob);
-        if (maybeDob.isEmpty()) {
-            return "Invalid DOB format. Use MM-DD-YYYY.";
+public class PatientDatabase {
+
+    private final String url;
+    private final String username;
+    private final String password;
+
+    public PatientDatabase(String url, String username, String password) {
+        this.url = url;
+        this.username = username;
+        this.password = password;
+    }
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(url, username, password);
+    }
+
+    // ✅ Add patient (6 args — matches your TESTS)
+    public void addPatient(String firstName, String lastName, String contact,
+                           String medicalCondition, boolean active, LocalDateTime recordTime) throws SQLException {
+
+        String sql = "INSERT INTO patients (first_name, last_name, contact, medical_condition, active, record_time) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, firstName);
+            stmt.setString(2, lastName);
+            stmt.setString(3, contact);
+            stmt.setString(4, medicalCondition);
+            stmt.setBoolean(5, active);
+            stmt.setTimestamp(6, Timestamp.valueOf(recordTime != null ? recordTime : LocalDateTime.now()));
+            stmt.executeUpdate();
         }
-        LocalDate birth = maybeDob.get();
-        LocalDateTime admission = LocalDateTime.now();
-        int id = nextID++;
-        Patient p = new Patient(id, firstName.trim(), lastName.trim(), birth, contact.trim(), condition.trim(), admission, status);
-        records.add(p);
-        return "Patient added: " + p.toDisplayString();
     }
 
-    public void addPatientFromFile(Patient p) {
-        records.add(p);
-        nextID = Math.max(nextID, p.getPatientID() + 1);
+    // ✅ Overload (5 args — for GUI)
+    public void addPatient(String firstName, String lastName, String contact,
+                           String medicalCondition, boolean active) throws SQLException {
+        addPatient(firstName, lastName, contact, medicalCondition, active, LocalDateTime.now());
     }
 
-    public void setNextID(int next) { this.nextID = Math.max(next, this.nextID); }
+    // ✅ Update any field
+    public void updatePatientField(int id, String field, Object value) throws SQLException {
+        String sql = "UPDATE patients SET " + field + " = ? WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-    public List<String> viewAllPatients() {
-        if (records.isEmpty()) return List.of("No patient records available.");
-        return records.stream().map(Patient::toDisplayString).collect(Collectors.toList());
-    }
-
-    public Optional<Patient> findById(int id) {
-        return records.stream().filter(r -> r.getPatientID() == id).findFirst();
-    }
-    
-    public String updatePatientField(int id, String field, String newValue) {
-        Optional<Patient> opt = findById(id);
-        if (opt.isEmpty()) return "Patient ID not found.";
-        Patient p = opt.get();
-        switch (field.toLowerCase()) {
-            case "firstname":
-                p.setFirstName(newValue);
-                break;
-            case "lastname":
-                p.setLastName(newValue);
-                break;
-            case "dob":
-                Optional<LocalDate> d = Patient.parseDob(newValue);
-                if (d.isEmpty()) return "Invalid DOB format. Use MM-DD-YYYY.";
-                p.setDateOfBirth(d.get());
-                break;
-            case "contact":
-                p.setEmergencyContact(newValue);
-                break;
-            case "condition":
-                p.setMedicalCondition(newValue);
-                break;
-            case "status":
-                p.setStatus(newValue.equalsIgnoreCase("true") || newValue.equalsIgnoreCase("yes"));
-                break;
-            default:
-                return "Unknown field name. Valid fields: firstname, lastname, dob, contact, condition, status";
-        }
-        return "Updated: " + p.toDisplayString();
-    }
-    //Removes patients
-    public String removePatient(int id) {
-        boolean removed = records.removeIf(r -> r.getPatientID() == id);
-        return removed ? ("Patient " + id + " removed.") : ("Patient ID not found.");
-    }
-
-    public List<Patient> getAllRecords() { return new ArrayList<>(records); }
-
-    // Custom feature: report by condition
-    public List<String> reportByCondition(String condition) {
-        List<Patient> filtered = records.stream()
-                .filter(p -> p.getMedicalCondition().equalsIgnoreCase(condition.trim()))
-                .toList();
-        if (filtered.isEmpty()) return List.of("No patients found for condition: " + condition);
-        return filtered.stream().map(Patient::toDisplayString).collect(Collectors.toList());
-    }
-
-    // Custom feature: report by date range (inclusive). Dates format MM-DD-YYYY
-    public List<String> reportByDateRange(String fromDateStr, String toDateStr) {
-        Optional<LocalDate> fromOpt = Patient.parseDob(fromDateStr);
-        Optional<LocalDate> toOpt = Patient.parseDob(toDateStr);
-        if (fromOpt.isEmpty() || toOpt.isEmpty()) return List.of("Invalid date format. Use MM-DD-YYYY for range.");
-        LocalDate from = fromOpt.get();
-        LocalDate to = toOpt.get();
-        List<Patient> filtered = records.stream()
-                .filter(p -> {
-                    LocalDate admittedDate = p.getAdmissionDate().toLocalDate();
-                    return (!admittedDate.isBefore(from)) && (!admittedDate.isAfter(to));
-                })
-                .toList();
-        if (filtered.isEmpty()) return List.of("No patients admitted between " + fromDateStr + " and " + toDateStr);
-        return filtered.stream().map(Patient::toDisplayString).collect(Collectors.toList());
-    }
-    public String loadPatientsFromFile(String filePath) {
-        try {
-            PatientFileLoader loader = new PatientFileLoader();
-            List<Patient> loaded = loader.load(filePath);
-            for (Patient p : loaded) {
-                addPatientFromFile(p); // add each loaded patient to the database
+            if (value instanceof Boolean) {
+                stmt.setBoolean(1, (Boolean) value);
+            } else {
+                stmt.setString(1, value.toString());
             }
-            return "Loaded " + loaded.size() + " patients from " + filePath;
-        } catch (Exception e) {
-            return "Error loading file: " + e.getMessage();
+            stmt.setInt(2, id);
+
+            int rows = stmt.executeUpdate();
+            if (rows == 0) {
+                throw new SQLException("No patient found with ID: " + id);
+            }
         }
     }
-    public String exportToFile(String filePath) {
-        PatientFileSaver saver = new PatientFileSaver();
-        return saver.save(filePath, getAllRecords());
+
+    // ✅ Delete (alias for tests)
+    public void removePatient(int id) throws SQLException {
+        deletePatient(id);
     }
 
+    // ✅ Delete patient
+    public void deletePatient(int id) throws SQLException {
+        String sql = "DELETE FROM patients WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-    public int highestId() {
-        return records.stream().mapToInt(Patient::getPatientID).max().orElse(0);
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    // ✅ Find patient by ID
+    public Patient findById(int id) throws SQLException {
+        String sql = "SELECT * FROM patients WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapPatient(rs);
+            }
+        }
+        return null;
+    }
+
+    // ✅ View all patients
+    public List<Patient> viewAllPatients() throws SQLException {
+        List<Patient> patients = new ArrayList<>();
+        String sql = "SELECT * FROM patients ORDER BY id ASC";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                patients.add(mapPatient(rs));
+            }
+        }
+        return patients;
+    }
+
+    // ✅ Report by condition
+    public List<Patient> reportByCondition(String condition) throws SQLException {
+        List<Patient> patients = new ArrayList<>();
+        String sql = "SELECT * FROM patients WHERE medical_condition LIKE ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, "%" + condition + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                patients.add(mapPatient(rs));
+            }
+        }
+        return patients;
+    }
+
+    // ✅ Clear all (for tests)
+    public void clearAll() throws SQLException {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM patients");
+        }
+    }
+
+    // ✅ Helper method
+    private Patient mapPatient(ResultSet rs) throws SQLException {
+        return new Patient(
+                rs.getInt("id"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("contact"),
+                rs.getString("medical_condition"),
+                rs.getBoolean("active"),
+                rs.getTimestamp("record_time").toLocalDateTime()
+        );
     }
 }
