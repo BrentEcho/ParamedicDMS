@@ -4,6 +4,12 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * Reads a CSV file into a list of patients.
+ *
+ * @return list of Patient objects
+ * @throws Exception on file IO or format failure
+ */
 
 public class PatientFileLoader {
 

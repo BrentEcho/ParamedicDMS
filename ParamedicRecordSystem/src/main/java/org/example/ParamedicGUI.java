@@ -5,6 +5,20 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.List;
+/**
+ * Swing-based GUI for managing ParamedicDMS records visually.
+ *
+ * Features:
+ * <ul>
+ *     <li>Patient table view</li>
+ *     <li>Add / edit / delete actions</li>
+ *     <li>Condition-based reporting</li>
+ *     <li>MySQL login dialog</li>
+ * </ul>
+ *
+ * <p>This class should be launched from {@link #main(String[])}.</p>
+ */
+
 
 public class ParamedicGUI extends JFrame {
     private final ParamedicDMS dms;
@@ -19,7 +33,7 @@ public class ParamedicGUI extends JFrame {
         setSize(950, 600);
         setLayout(new BorderLayout());
 
-        // --- Table setup ---
+        // Table setup
         String[] columns = {"ID", "First Name", "Last Name", "Contact", "Condition", "Active", "Record Time"};
         tableModel = new DefaultTableModel(columns, 0);
         patientTable = new JTable(tableModel);
@@ -27,7 +41,7 @@ public class ParamedicGUI extends JFrame {
         patientTable.setAutoCreateRowSorter(true);
         add(new JScrollPane(patientTable), BorderLayout.CENTER);
 
-        // --- Buttons ---
+        //  Buttons
         JPanel buttonPanel = new JPanel();
         JButton refreshBtn = new JButton("Refresh");
         JButton addBtn = new JButton("Add Patient");
@@ -42,7 +56,7 @@ public class ParamedicGUI extends JFrame {
         buttonPanel.add(reportBtn);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- Button logic ---
+        // Button logic
         refreshBtn.addActionListener(e -> loadPatients());
 
         addBtn.addActionListener(e -> showAddDialog());
@@ -54,7 +68,7 @@ public class ParamedicGUI extends JFrame {
         setVisible(true);
     }
 
-    // ✅ Add Patient
+    // Add Patient
     private void showAddDialog() {
         JTextField first = new JTextField();
         JTextField last = new JTextField();
@@ -82,7 +96,7 @@ public class ParamedicGUI extends JFrame {
         }
     }
 
-    // ✅ Update selected row
+    // Update selected row
     private void showUpdateDialog() {
         int row = patientTable.getSelectedRow();
         if (row == -1) {
@@ -125,7 +139,7 @@ public class ParamedicGUI extends JFrame {
         }
     }
 
-    // ✅ Delete selected row
+    // Delete selected row
     private void deleteSelected() {
         int row = patientTable.getSelectedRow();
         if (row == -1) {
@@ -146,7 +160,7 @@ public class ParamedicGUI extends JFrame {
         }
     }
 
-    // ✅ Report by condition
+    // Report by condition
     private void reportByCondition() {
         String condition = JOptionPane.showInputDialog(this, "Enter condition to search for:");
         if (condition == null || condition.trim().isEmpty()) return;
@@ -158,7 +172,7 @@ public class ParamedicGUI extends JFrame {
         }
     }
 
-    // ✅ Table data handling
+    // Table data handling
     private void loadPatients() {
         try {
             List<Patient> patients = dms.viewAllPatients();

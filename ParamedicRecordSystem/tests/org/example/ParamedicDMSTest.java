@@ -7,6 +7,22 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+/**
+ * Unit test suite for {@link ParamedicDMS} and {@link PatientDatabase}.
+ * Uses an actual test database for integration-style testing.
+ *
+ * Verifies:
+ * <ul>
+ *     <li>Record insertion</li>
+ *     <li>Field updates</li>
+ *     <li>Query behavior</li>
+ *     <li>Delete operations</li>
+ *     <li>Condition-based reporting</li>
+ * </ul>
+ *
+ * @author Brent
+ * @since 2025-10
+ */
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ParamedicDMSTest {

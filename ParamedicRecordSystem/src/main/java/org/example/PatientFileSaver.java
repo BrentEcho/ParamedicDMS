@@ -3,6 +3,7 @@ package org.example;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.List;
+//Saves a list of patients to a specified file.
 
 public class PatientFileSaver {
     public static void save(String filename, List<Patient> patients) {

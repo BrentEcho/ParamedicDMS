@@ -4,6 +4,17 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * Handles all SQL operations for interacting with the patient table.
+ * This class encapsulates JDBC usage and database connectivity.
+ *
+ * Supports CRUD, searching, clearing, and condition-based reporting.
+ *
+ * <p>Uses prepared statements to prevent SQL injection.</p>
+ *
+ * @author Brent
+ * @since 2025
+ */
 
 public class PatientDatabase {
 
@@ -21,7 +32,18 @@ public class PatientDatabase {
         return DriverManager.getConnection(url, username, password);
     }
 
-    // ✅ Add patient (6 args — matches your TESTS)
+    /**
+     * Inserts a new patient into the database.
+     *
+     * @param firstName patient first name
+     * @param lastName  patient last name
+     * @param contact   phone or contact information
+     * @param medicalCondition diagnosis or reason for care
+     * @param active    system status flag
+     * @param recordTime date/time of admission
+     * @throws SQLException if insertion fails
+     */
+
     public void addPatient(String firstName, String lastName, String contact,
                            String medicalCondition, boolean active, LocalDateTime recordTime) throws SQLException {
 
@@ -39,13 +61,13 @@ public class PatientDatabase {
         }
     }
 
-    // ✅ Overload (5 args — for GUI)
+    // Overload
     public void addPatient(String firstName, String lastName, String contact,
                            String medicalCondition, boolean active) throws SQLException {
         addPatient(firstName, lastName, contact, medicalCondition, active, LocalDateTime.now());
     }
 
-    // ✅ Update any field
+    // Update any field
     public void updatePatientField(int id, String field, Object value) throws SQLException {
         String sql = "UPDATE patients SET " + field + " = ? WHERE id = ?";
         try (Connection conn = getConnection();
@@ -65,12 +87,12 @@ public class PatientDatabase {
         }
     }
 
-    // ✅ Delete (alias for tests)
+    // Delete
     public void removePatient(int id) throws SQLException {
         deletePatient(id);
     }
 
-    // ✅ Delete patient
+    // Delete patient
     public void deletePatient(int id) throws SQLException {
         String sql = "DELETE FROM patients WHERE id = ?";
         try (Connection conn = getConnection();
@@ -81,7 +103,7 @@ public class PatientDatabase {
         }
     }
 
-    // ✅ Find patient by ID
+    // Find patient by ID
     public Patient findById(int id) throws SQLException {
         String sql = "SELECT * FROM patients WHERE id = ?";
         try (Connection conn = getConnection();
@@ -96,7 +118,7 @@ public class PatientDatabase {
         return null;
     }
 
-    // ✅ View all patients
+    // View all patients
     public List<Patient> viewAllPatients() throws SQLException {
         List<Patient> patients = new ArrayList<>();
         String sql = "SELECT * FROM patients ORDER BY id ASC";
@@ -111,7 +133,7 @@ public class PatientDatabase {
         return patients;
     }
 
-    // ✅ Report by condition
+    // Report by condition
     public List<Patient> reportByCondition(String condition) throws SQLException {
         List<Patient> patients = new ArrayList<>();
         String sql = "SELECT * FROM patients WHERE medical_condition LIKE ?";
@@ -128,7 +150,7 @@ public class PatientDatabase {
         return patients;
     }
 
-    // ✅ Clear all (for tests)
+    // Clear all
     public void clearAll() throws SQLException {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
@@ -136,7 +158,7 @@ public class PatientDatabase {
         }
     }
 
-    // ✅ Helper method
+    // Helper method
     private Patient mapPatient(ResultSet rs) throws SQLException {
         return new Patient(
                 rs.getInt("id"),
